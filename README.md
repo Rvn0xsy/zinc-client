@@ -14,6 +14,8 @@ Usage of zinc-client:
         zincsearch index name (default "index_name")
   -password string
         zincsearch password (default "admin")
+  -thread int
+        thread num (default 4)
   -url string
         zincsearch api host (default "http://localhost:4080")
   -username string
