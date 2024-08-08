@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/panjf2000/ants/v2"
+	"github.com/schollz/progressbar/v3"
 	"github.com/vjeantet/grok"
 	client "github.com/zinclabs/sdk-go-zincsearch"
 )
@@ -23,6 +24,7 @@ var (
 	Username       = "admin"
 	Password       = "admin"
 	Index          = "index_name"
+	LogFileLines   = 0
 	Count          = 0
 	ThreadNum      = 10
 	DebugFileHanle *os.File
@@ -49,7 +51,7 @@ type DocumentStruct struct {
 // Finally, it sets the output of the log package to the log file handle.
 func init() {
 	// 解析命令行
-	flag.StringVar(&LogFile, "file", "access.log", "pass file")
+	flag.StringVar(&LogFile, "file", "access.log", "log filepath")
 	flag.StringVar(&Username, "username", "admin", "zincsearch username")
 	flag.StringVar(&Password, "password", "admin", "zincsearch password")
 	flag.StringVar(&URL, "url", "http://localhost:4080", "zincsearch api host")
@@ -65,6 +67,11 @@ func init() {
 	log.SetOutput(multiWriter)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	log.SetOutput(DebugFileHanle)
+	LogFileLines, err = CountLines(LogFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print("Log File Lines: ", LogFileLines, "\n")
 }
 
 // main is the entry point of the program.
@@ -89,6 +96,7 @@ func main() {
 	log.Println("-------- Start -----------")
 	defer DebugFileHanle.Close()
 	startTime := time.Now()
+	bar := progressbar.Default(int64(LogFileLines))
 	// 设置并发
 	var wg sync.WaitGroup
 	grountinePool, _ := ants.NewPoolWithFunc(ThreadNum, func(i interface{}) {
@@ -128,6 +136,7 @@ func main() {
 		}
 		wg.Add(1)
 		grountinePool.Invoke(DocumentStruct{Index, document})
+		bar.Add(1)
 	}
 	wg.Wait()
 	endTime := time.Now()

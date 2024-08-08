@@ -9,7 +9,7 @@
 ```shell
 Usage of zinc-client:
   -file string
-        pass file (default "access.log")
+        log filepath (default "access.log")
   -index string
         zincsearch index name (default "index_name")
   -password string
